@@ -1,49 +1,25 @@
-from flask import Flask, render_template, request
-from elevenlabs import generate, play, Voice, set_api_key
+import streamlit as st
+from elevenlabs import generate, save, set_api_key
 import os
 import subprocess
 
-app = Flask(__name__)
+set_api_key("sk_0be86a97d6cd7dd86b035694a0a607d3bb9466018b9090b7")
 
-# ✅ Set your ElevenLabs API key
-set_api_key("sk_0be86a97d6cd7dd86b035694a0a607d3bb9466018b9090b7")  # Replace this!
+st.title("🗣️ Talking Avatar Generator")
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    show_video = False
+text = st.text_area("Enter your text below:")
+if st.button("Generate Talking Avatar") and text:
+    # Generate audio
+    audio = generate(text=text, voice="EXAVITQu4vr4xnSDxMaL", model="eleven_monolingual_v1")
+    save(audio, "output.mp3")
 
-    if request.method == 'POST':
-        text = request.form['text']
+    # Merge with avatar image using ffmpeg
+    if not os.path.exists("static"):
+        os.makedirs("static")
+    subprocess.call([
+        "ffmpeg", "-y", "-i", "output.mp3", "-loop", "1", "-i", "static/avatar.jpg",
+        "-c:v", "libx264", "-t", "5", "-pix_fmt", "yuv420p", "static/video.mp4"
+    ])
 
-        # Generate TTS audio
-        audio = generate(
-            text=text,
-            voice="EXAVITQu4vr4xnSDxMaL",  # You can change to another voice in your account
-            model="eleven_monolingual_v1"
-        )
-
-        # Save audio to file
-        with open("static/output.mp3", "wb") as f:
-            f.write(audio)
-
-        # ✅ Generate talking video (basic version using image)
-        subprocess.call([
-            "ffmpeg", "-y",
-            "-loop", "1",
-            "-i", "avatar.jpg",
-            "-i", "static/output.mp3",
-            "-shortest",
-            "-vf", "scale=640:480",
-            "-c:v", "libx264",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-pix_fmt", "yuv420p",
-            "static/talking_avatar.mp4"
-        ])
-
-        show_video = True
-
-    return render_template("index.html", show_video=show_video)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    # Show result
+    st.video("static/video.mp4")
