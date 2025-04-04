@@ -1,0 +1,27 @@
+import streamlit as st
+from elevenlabs import generate, save, set_api_key
+import subprocess
+
+# Set your ElevenLabs API key here
+set_api_key("sk_0be86a97d6cd7dd86b035694a0a607d3bb9466018b9090b7")
+
+st.title("🗣️ Talking Avatar Generator")
+
+# User input for text
+text = st.text_area("Enter text for the avatar to speak:")
+
+if st.button("Generate Talking Avatar"):
+    with st.spinner("Generating..."):
+        # Generate TTS audio from text
+        audio = generate(text=text, voice="EXAVITQu4vr4xnSDxMaL")  # Replace 'Rachel' with any available voice
+        save(audio, "output.mp3")
+        
+        # Create the video from the avatar and TTS audio
+        subprocess.run([
+            "ffmpeg", "-y", "-loop", "1", "-i", "avatar.jpg",  # Make sure you have this image in your project folder
+            "-i", "output.mp3", "-c:v", "libx264", "-t", "5",
+            "-pix_fmt", "yuv420p", "talking_avatar.mp4"
+        ])
+        
+    st.success("Done!")
+    st.video("talking_avatar.mp4")  # Display the generated video
