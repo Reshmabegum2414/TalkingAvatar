@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Talking Avatar App</title>
+</head>
+<body>
+    <h1>🗣️ Talking Avatar</h1>
+    
+    <form method="POST">
+        <label for="text">Enter text:</label><br>
+        <textarea id="text" name="text" rows="5" cols="40"></textarea><br><br>
+        <button type="submit">Generate</button>
+    </form>
+
+    {% if show_video %}
+        <h2>🎬 Talking Avatar Video:</h2>
+        <video width="320" height="240" controls>
+            <source src="{{ url_for('static', filename='talking_avatar.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    {% endif %}
+</body>
+</html>
