@@ -1,25 +1,31 @@
-import streamlit as st
+from flask import Flask, render_template, request
 from elevenlabs import generate, save, set_api_key
-import os
-import subprocess
 
-set_api_key("sk_0be86a97d6cd7dd86b035694a0a607d3bb9466018b9090b7")
+# ✅ Set API key and voice ID
+set_api_key("sk_a61a466b7fff5a7ae1e4f67dda5f83bfa7ba14e814944f6d")
+VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # ← Use voice ID from your account
 
-st.title("🗣️ Talking Avatar Generator")
+app = Flask(__name__)
 
-text = st.text_area("Enter your text below:")
-if st.button("Generate Talking Avatar") and text:
-    # Generate audio
-    audio = generate(text=text, voice="EXAVITQu4vr4xnSDxMaL", model="eleven_monolingual_v1")
-    save(audio, "output.mp3")
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        text = request.form["text"]
 
-    # Merge with avatar image using ffmpeg
-    if not os.path.exists("static"):
-        os.makedirs("static")
-    subprocess.call([
-        "ffmpeg", "-y", "-i", "output.mp3", "-loop", "1", "-i", "static/avatar.jpg",
-        "-c:v", "libx264", "-t", "5", "-pix_fmt", "yuv420p", "static/video.mp4"
-    ])
+        try:
+            # ✅ Generate speech using ElevenLabs
+            audio = generate(
+                text=text,
+                voice=VOICE_ID,
+                model="eleven_monolingual_v1"
+            )
+            save(audio, "static/output.mp3")
+            return render_template("index.html", audio_file="static/output.mp3")
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
 
-    # Show result
-    st.video("static/video.mp4")
+    return render_template("index.html", audio_file=None)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
