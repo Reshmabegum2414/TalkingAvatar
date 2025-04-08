@@ -3,9 +3,7 @@ from elevenlabs import generate, save, set_api_key
 import subprocess
 
 # Set your ElevenLabs API key here
-set_api_key("sk_0be86a97d6cd7dd86b035694a0a607d3bb9466018b9090b7")
-
-st.title("🗣️ Talking Avatar Generator")
+set_api_key("sk_a61a466b7fff5a7ae1e4f67dda5f83bfa7ba14e814944f6d")
 
 # User input for text
 text = st.text_area("Enter text for the avatar to speak:")
@@ -23,5 +21,8 @@ if st.button("Generate Talking Avatar"):
             "-pix_fmt", "yuv420p", "talking_avatar.mp4"
         ])
         
+    st.success("Done!")
+    st.video("talking_avatar.mp4")  # Display the generated video
+
     st.success("Done!")
     st.video("talking_avatar.mp4")  # Display the generated video
